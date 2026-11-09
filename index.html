@@ -63,20 +63,22 @@
 
             await scanner.stop();
 
-if (window.opener && !window.opener.closed) {
-  window.opener.postMessage({
+const targetWindow = window.opener;
+
+if (targetWindow && !targetWindow.closed) {
+  targetWindow.postMessage({
     type: "ZAMRONIA_QR",
     token: token
   }, "*");
+
+  document.getElementById("status").textContent =
+    "تم إرسال الرمز للنظام";
 } else {
   document.getElementById("status").textContent =
-    "تعذر الاتصال بنظام الحضور. افتح الماسح من داخل النظام.";
+    "صفحة النظام الأصلية غير متصلة";
   busy = false;
   return;
 }
-
-document.getElementById("status").textContent =
-  "تم إرسال الرمز للنظام";
           },
           () => {}
         );
