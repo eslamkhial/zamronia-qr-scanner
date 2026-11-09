@@ -63,10 +63,15 @@
 
             await scanner.stop();
 
-            window.parent.postMessage({
-              type: "ZAMRONIA_QR",
-              token: token
-            }, "*");
+            if (window.opener && !window.opener.closed) {
+  window.opener.postMessage({
+    type: "ZAMRONIA_QR",
+    token: token
+  }, "*");
+} else {
+  document.getElementById("status").textContent =
+    "تعذر الاتصال بنظام الحضور. افتح الماسح من داخل النظام.";
+}, "*");
 
             document.getElementById("status").textContent =
               "تم إرسال الرمز للنظام";
