@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zamronia QR Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    #reader {
+      max-width: 400px;
+      margin: 20px auto;
+    }
+    button {
+      padding: 14px 25px;
+      margin: 8px;
+      font-size: 17px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #status {
+      margin: 20px;
+      font-size: 17px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>فريق الزمرونية لكرة القدم</h2>
+  <h3>ماسح QR للحضور</h3>
+
+  <div id="reader"></div>
+
+  <button id="start" onclick="startScanner()">بدء المسح</button>
+  <button id="stop" onclick="stopScanner()" disabled>إيقاف</button>
+
+  <div id="status">اضغط بدء المسح</div>
+
+  <script>
+    let scanner = null;
+    let busy = false;
+
+    async function startScanner() {
+      try {
+        scanner = new Html5Qrcode("reader");
+
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 230, height: 230 } },
+          async token => {
+            if (busy) return;
+            busy = true;
+
+            document.getElementById("status").textContent =
+              "تمت قراءة QR بنجاح";
+
+            await scanner.stop();
+
+            window.parent.postMessage({
+              type: "ZAMRONIA_QR",
+              token: token
+            }, "*");
+
+            document.getElementById("status").textContent =
+              "تم إرسال الرمز للنظام";
+          },
+          () => {}
+        );
+
+        document.getElementById("start").disabled = true;
+        document.getElementById("stop").disabled = false;
+        document.getElementById("status").textContent =
+          "الكاميرا جاهزة";
+
+      } catch (err) {
+        document.getElementById("status").textContent =
+          "خطأ الكاميرا: " + err;
+      }
+    }
+
+    async function stopScanner() {
+      if (scanner) {
+        await scanner.stop();
+        await scanner.clear();
+        scanner = null;
+      }
+
+      busy = false;
+      document.getElementById("start").disabled = false;
+      document.getElementById("stop").disabled = true;
+      document.getElementById("status").textContent =
+        "تم إيقاف الكاميرا";
+    }
+  </script>
+
+</body>
+</html>
